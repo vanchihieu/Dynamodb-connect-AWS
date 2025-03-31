@@ -58,15 +58,21 @@ const MonHocModel = {
     }
   },
 
-  updateMonHoc: async (monhoc) => {
+  updateMonHoc: async (id, monhoc) => {
+    const currentItem = await MonHocModel.getMonHocById(id);
+
+    if (!currentItem) {
+      throw new Error(`Course with id ${id} not found`);
+    }
+
     const params = {
       TableName: tableName,
       Key: {
-        id: monhoc.id,
-        // name: monhoc.name,
+        id,
+        // name: currentItem.name,
       },
       UpdateExpression:
-        "set #name = :name, #type = :type, #semester = :semester, #department = :department, #image = :image",
+        "set  #name = :name, #type = :type, #semester = :semester, #department = :department, #image = :image",
       ExpressionAttributeNames: {
         "#name": "name",
         "#type": "type",
@@ -86,6 +92,8 @@ const MonHocModel = {
 
     try {
       const data = await dynamodb.update(params).promise();
+      console.log("Item updated successfully:", data);
+
       return data.Attributes;
     } catch (error) {
       console.log("Error updateMonHoc", error);

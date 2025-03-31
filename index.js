@@ -131,7 +131,7 @@ app.post("/edit/:id", upload, async (req, res) => {
       image,
     };
 
-    await MonhocModel.updateMonHoc(updatedCourse);
+    await MonhocModel.updateMonHoc(id, updatedCourse);
     res.redirect("/");
   } catch (error) {
     console.log("Error updating course:", error);
@@ -144,6 +144,7 @@ app.get("/delete/:id/", async (req, res) => {
 
   try {
     await MonhocModel.deleteMonHoc(id);
+    // }
     res.redirect("/");
   } catch (error) {
     console.log("Error deleteMonHoc", error);
