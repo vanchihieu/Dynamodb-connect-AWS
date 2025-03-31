@@ -25,6 +25,15 @@
                         <h5 class="mb-0">Chỉnh sửa môn học</h5>
                     </div>
                     <div class="card-body">
+                        <% if(typeof errors !== 'undefined' && errors.length > 0) { %>
+                            <div class="alert alert-danger">
+                                <ul class="mb-0">
+                                    <% errors.forEach(error => { %>
+                                    <li><%= error %></li>
+                                    <% }); %>
+                                </ul>
+                            </div>
+                            <% } %>
                         <form action="/edit/<%= course.id %>" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="id" class="form-label">STT</label>
@@ -81,10 +90,7 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="mt-5 text-center text-muted py-3 border-top">
-            <p>© 2025 Hệ thống Quản lý Môn học</p>
-        </footer>
+    
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"

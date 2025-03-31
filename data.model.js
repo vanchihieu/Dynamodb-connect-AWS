@@ -1,5 +1,5 @@
 const { dynamodb } = require("./aws.helper");
-const tableName = "MonHoc2";
+const tableName = "MonHoc4";
 
 const MonHocModel = {
   createMonHoc: async (monhoc) => {
@@ -63,7 +63,7 @@ const MonHocModel = {
       TableName: tableName,
       Key: {
         id: monhoc.id,
-        name: monhoc.name,
+        // name: monhoc.name,
       },
       UpdateExpression:
         "set #name = :name, #type = :type, #semester = :semester, #department = :department, #image = :image",
@@ -93,12 +93,12 @@ const MonHocModel = {
     }
   },
 
-  deleteMonHoc: async (id, tenMonHoc) => {
+  deleteMonHoc: async (id) => {
     const params = {
       TableName: tableName,
       Key: {
         id, // id la partition key
-        name: tenMonHoc, // tenMonHoc la sort key
+        // name: tenMonHoc, // tenMonHoc la sort key
       },
     };
 

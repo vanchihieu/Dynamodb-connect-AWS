@@ -2,16 +2,12 @@ const express = require("express");
 const PORT = process.env.PORT || 3000;
 const app = express();
 
-let courses = require("./courses"); // import mảng courses từ file courses.json
-const { dynamodb } = require("./aws.helper");
 const MonhocModel = require("./data.model");
-const AWS = require("aws-sdk");
 
 const multer = require("multer");
 const { uploadFile } = require("./file.service");
 
-app.use(express.json()); // for parsing application/json
-// register middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(express.static("./views")); // cho phép truy cập vào thư mục views
 
@@ -32,9 +28,41 @@ const upload = multer({
   },
 }).single("image"); // tên field trong form
 
-// app.get('/', (req, res) => {
-//     return res.render('index', { courses }); // render file index.ejs và truyền vào mảng courses
-// });
+const validateCourseData = (req, res, next) => {
+  const { id, name, type, semester, department } = req.body;
+  const errors = [];
+
+  // Check required fields
+  if (!id) errors.push("STT không được để trống");
+  if (!name) errors.push("Tên môn học không được để trống");
+  if (!type) errors.push("Loại môn học không được để trống");
+  if (!semester) errors.push("Học kỳ không được để trống");
+  if (!department) errors.push("Khoa không được để trống");
+
+  // For create operation, require image
+  if (req.path === "/save" && !req.file) {
+    errors.push("Hình ảnh là bắt buộc");
+  }
+
+  if (errors.length > 0) {
+    // For create form
+    if (req.path === "/save") {
+      return MonhocModel.getAllMonHoc()
+        .then((courses) => {
+          res.render("index", { courses, errors });
+        })
+        .catch((error) => {
+          res.status(500).send(error);
+        });
+    }
+    // For edit form
+    else {
+      return res.render("edit", { course: req.body, errors });
+    }
+  }
+
+  next();
+};
 
 app.get("/", async (req, res) => {
   try {
@@ -48,16 +76,7 @@ app.get("/", async (req, res) => {
   }
 });
 
-// app.post('/save', (req, res) => {
-//     const { name, type, semester, department, id } = req.body;
-
-//     const newCourse = { id, name, type, semester, department };
-//     courses.push(newCourse);
-
-//     return res.redirect('/');
-// });
-
-app.post("/save", upload, async (req, res) => {
+app.post("/save", upload, validateCourseData, async (req, res) => {
   try {
     const image = req.file;
     const imageUrl = await uploadFile(image);
@@ -74,21 +93,6 @@ app.post("/save", upload, async (req, res) => {
   }
 });
 
-// app.get('/edit/:id', (req, res) => {
-//     const { id } = req.params;
-//     const course = courses.find(course => course.id === id);
-
-//     return res.render('edit', { course });
-// })
-
-// app.get('/delete/:id', (req, res) => {
-//     const { id } = req.params;
-//     courses = courses.filter(course => course.id !== id);
-
-//     return res.redirect('/');
-// })
-
-// Add this route to render the edit form
 app.get("/edit/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -110,14 +114,11 @@ app.post("/edit/:id", upload, async (req, res) => {
     const { id, name, type, semester, department } = req.body;
     let image = null;
 
-    // Get the current course to preserve image if no new one was uploaded
     const currentCourse = await MonhocModel.getMonHocById(id);
 
-    // If a new image was uploaded, process it
     if (req.file) {
       image = await uploadFile(req.file);
     } else {
-      // Keep the existing image
       image = currentCourse.image;
     }
 
@@ -142,13 +143,7 @@ app.get("/delete/:id/", async (req, res) => {
   const { id } = req.params;
 
   try {
-    const course = await MonhocModel.getMonHocById(id);
-
-    if (course) {
-      console.log("🚀 ~ app.get ~ course:", course);
-
-      await MonhocModel.deleteMonHoc(course.id, course.name);
-    }
+    await MonhocModel.deleteMonHoc(id);
     res.redirect("/");
   } catch (error) {
     console.log("Error deleteMonHoc", error);
