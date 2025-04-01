@@ -1,5 +1,4 @@
 require("dotenv").config();
-const e = require("express");
 const { s3 } = require("./aws.helper");
 
 const randomString = (number) => {

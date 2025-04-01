@@ -155,3 +155,8 @@ app.get("/delete/:id/", async (req, res) => {
 app.listen(PORT, () => {
   console.log("Server is running http://localhost:" + PORT);
 });
+
+// AWS_REGION=ap-southeast-1
+// AWS_ACCESS_KEY_ID=AKIA3CMCCYOHD6LSJX7C
+// AWS_SECRET_ACCESS_KEY=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
+// AWS_BUCKET_NAME=dynamodb-s3-lab6
